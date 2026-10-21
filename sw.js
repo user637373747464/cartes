@@ -1,5 +1,5 @@
 /* Service worker : l'app se charge même sans réseau (réseau d'abord, copie locale en secours). */
-const VERSION = 'cartes-v1';
+const VERSION = 'cartes-v2';
 const FICHIERS = ['./', 'index.html', 'styles.css', 'app.js', 'logique.js', 'manifest.webmanifest',
                   'vendor/katex/katex.min.js', 'vendor/katex/katex.min.css', 'icons/icon-192.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(FICHIERS)).then(() => self.skipWaiting())); });

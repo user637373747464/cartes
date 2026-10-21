@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   var L = window.Logique;
-  var VERSION_APP = '1.0';
+  var VERSION_APP = '1.1';
 
   /* ================================================================== */
   /* État et outils                                                      */
@@ -267,11 +267,14 @@
   /* ================================================================== */
   /* Feuilles : paquet et carte                                          */
   /* ================================================================== */
-  function ouvrirFeuille(html) {
-    var c = $('#calque'); c.innerHTML = html; c.hidden = false; document.body.style.overflow = 'hidden';
+  /* haut = true : petite feuille avec un champ de texte → placée EN HAUT de l'écran sur téléphone/tablette,
+     sinon le clavier (iPhone) la recouvre entièrement et on ne peut plus ni écrire ni valider. */
+  function ouvrirFeuille(html, haut) {
+    var c = $('#calque'); c.innerHTML = html; c.className = haut ? 'haut' : ''; c.hidden = false; document.body.style.overflow = 'hidden';
   }
+  function ecranTactile() { return !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); }
   function fermerFeuille() {
-    var c = $('#calque'); c.hidden = true; c.innerHTML = ''; E.edition = null; E.edPaquet = null;
+    var c = $('#calque'); c.hidden = true; c.innerHTML = ''; c.className = ''; E.edition = null; E.edPaquet = null;
     document.body.style.overflow = $('#plein').hidden ? '' : 'hidden';
   }
   function interrupteur(id, actif) { return '<button class="interrupteur" id="' + id + '" role="switch" aria-checked="' + (actif ? 'true' : 'false') + '" data-act="bascule"></button>'; }
@@ -279,12 +282,13 @@
   function feuillePaquet() {
     var p = E.edPaquet, nouveau = !p.id;
     ouvrirFeuille('<div class="feuille"><h3>' + (nouveau ? 'Nouveau paquet' : 'Réglages du paquet') + '</h3>' +
-      '<label class="champ" for="champ-nom">Nom</label><input id="champ-nom" type="text" value="' + esc(p.nom) + '" placeholder="ex : Arithmétique" autocomplete="off">' +
+      '<label class="champ" for="champ-nom">Nom</label><input id="champ-nom" type="text" value="' + esc(p.nom) + '" placeholder="ex : Arithmétique" autocomplete="off" enterkeyhint="done">' +
       '<div class="bascule"><div class="t"><b>Important</b><span>Revient plus souvent</span></div>' + interrupteur('sw-important', p.important) + '</div>' +
       (nouveau ? '' : '<div class="bascule"><div class="t"><b>En pause</b><span>N’apparaît plus dans les révisions</span></div>' + interrupteur('sw-muet', p.muet) + '</div>') +
       '<div class="rangee" style="margin-top:22px"><button class="btn" data-act="fermer-feuille">Annuler</button><button class="btn primaire" data-act="sauver-paquet">Enregistrer</button></div>' +
-      (nouveau ? '' : '<div class="rangee"><button class="btn danger" data-act="supprimer-paquet">Supprimer ce paquet</button></div>') + '</div>');
-    if (nouveau) setTimeout(function () { var i = $('#champ-nom'); if (i) i.focus(); }, 60);
+      (nouveau ? '' : '<div class="rangee"><button class="btn danger" data-act="supprimer-paquet">Supprimer ce paquet</button></div>') + '</div>', true);
+    // sur écran tactile on laisse la personne toucher le champ : le clavier s'ouvre alors normalement (iOS)
+    if (nouveau && !ecranTactile()) setTimeout(function () { var i = $('#champ-nom'); if (i) i.focus(); }, 60);
   }
 
   function blocFace(cote, libelle) {
@@ -616,6 +620,11 @@
     if (el && actions[el.dataset.act]) { e.preventDefault(); actions[el.dataset.act](el, e); return; }
     if (e.target.id === 'calque') fermerFeuille();
     if (e.target.closest('#scene') && E.seance && E.seance.type === 'classique' && !E.seance.retourne && E.seance.file.length) actions.retourner();
+  });
+
+  // touche « OK / Retour » du clavier : valide le nom du paquet
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.isComposing && e.target.id === 'champ-nom') { e.preventDefault(); actions['sauver-paquet'](); }
   });
 
   document.addEventListener('input', function (e) {

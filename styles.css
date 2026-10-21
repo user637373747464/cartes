@@ -113,6 +113,12 @@ h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1.4px; color: v
   animation: monte .22s ease-out; -webkit-overflow-scrolling: touch;
 }
 @keyframes monte { from { transform: translateY(40px); opacity: .4; } to { transform: none; opacity: 1; } }
+/* petite feuille avec un champ à remplir : en haut sur téléphone/tablette (le clavier recouvrirait le bas de l'écran) */
+@media (pointer: coarse), (max-width: 639px) {
+  #calque.haut { align-items: flex-start; padding: calc(env(safe-area-inset-top) + 10px) 10px 0; }
+  #calque.haut .feuille { border: 1px solid var(--trait); border-radius: 28px; max-height: 80vh; max-height: 80dvh; padding-bottom: 24px; animation: descend .22s ease-out; }
+}
+@keyframes descend { from { transform: translateY(-30px); opacity: .4; } to { transform: none; opacity: 1; } }
 .feuille h3 { margin: 0 0 14px; font-size: 22px; }
 label.champ { display: block; font-size: 12.5px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--gris); font-weight: 700; margin: 18px 2px 7px; }
 textarea, input[type=text] {
